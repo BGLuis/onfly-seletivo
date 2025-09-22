@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: n8n_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-n8n}
+      POSTGRES_USER: ${POSTGRES_USER:-n8n}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-n8n_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    networks:
+      - n8n_network
+
+  build-custom-nodes:
+    image: node:18-alpine
+    container_name: n8n_builder
+    volumes:
+      - ./custom-nodes/n8n-nodes-random:/workspace
+      - n8n_data:/output
+    working_dir: /workspace
+    command: >
+      sh -c "
+        echo 'Installing global dependencies...' &&
+        npm install -g typescript gulp-cli &&
+        echo 'Installing project dependencies...' &&
+        npm install &&
+        npm install --save-dev gulp typescript @types/node rimraf &&
+        echo 'Building custom node...' &&
+        npm run build &&
+        echo 'Copying compiled files...' &&
+        mkdir -p /output/custom &&
+        (cp -r dist/* /output/custom/ 2>/dev/null || cp -r . /output/custom/n8n-nodes-random/) &&
+        echo 'Build completed successfully!'
+      "
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: n8n
+    restart: unless-stopped
+    environment:
+      DB_TYPE: ${DB_TYPE:-postgresdb}
+      DB_POSTGRESDB_HOST: ${POSTGRES_HOST:-postgres}
+      DB_POSTGRESDB_PORT: ${POSTGRES_PORT:-5432}
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB:-n8n}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER:-n8n}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD:-n8n_password}
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin@admin.com}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD:-admin123}
+      WEBHOOK_URL: ${WEBHOOK_URL:-http://localhost:5678/}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE:-America/Sao_Paulo}
+    ports:
+      - "${N8N_PORT:-5678}:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      build-custom-nodes:
+        condition: service_completed_successfully
+      postgres:
+        condition: service_started
+    networks:
+      - n8n_network
+
+volumes:
+  postgres_data:
+    driver: local
+  n8n_data:
+    driver: local
+
+networks:
+  n8n_network:
+    driver: bridge
