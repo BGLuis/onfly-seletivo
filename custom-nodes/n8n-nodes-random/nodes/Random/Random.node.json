@@ -4,17 +4,5 @@
     "codexVersion": "1.0",
     "categories": [
         "Miscellaneous"
-    ],
-    "resources": {
-        "credentialDocumentation": [
-            {
-                "url": ""
-            }
-        ],
-        "primaryDocumentation": [
-            {
-                "url": ""
-            }
-        ]
-    }
+    ]
 }
