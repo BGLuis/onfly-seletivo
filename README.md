@@ -21,11 +21,11 @@
 
 # 📖 Sobre
 
-Um node personalizado para n8n que gera um numero aleatorio que é gerado apartir da api da [random.org](https://www.random.org/)
+Um node personalizado para n8n que gera um número aleatório que é gerado a partir da API da [random.org](https://www.random.org/)
 
 # 📋 Motivo
 
-Esse Projeto existe como parte do processo seletivo da [onfly](https://www.onfly.com.br)
+Este projeto existe como parte do processo seletivo da [onfly](https://www.onfly.com.br)
 
 # ⚙️ Funcionalidades do Node
 
@@ -47,8 +47,10 @@ Esse Projeto existe como parte do processo seletivo da [onfly](https://www.onfly
 
 1. Clonar o Repositório:<br/>
 
-    - git clone git@github.com:BGLuis/onfly-seletivo.git n8n-dev-environment
-      cd n8n-dev-environment
+    ```bash
+    git clone git@github.com:BGLuis/onfly-seletivo.git n8n-dev-environment
+    cd n8n-dev-environment
+    ```
 
 2. Configurar Variáveis de Ambiente (Opcional):<br/>
    O docker compose não precisa de pré-configuração, mas pode evitar colisões de portas
@@ -110,15 +112,15 @@ N8N_PORT=8080
 
 1. Acesse sua instância do n8n
 
-2. Crie um novo fluxo de trabalho.
+2. Crie um novo fluxo de trabalho
 
-3. Clique no botão + para adicionar um novo nó.
+3. Clique no botão + para adicionar um novo nó
 
-4. Na barra de busca, digite "Random". O seu nó personalizado deve aparecer.
+4. Na barra de busca, digite "Random". O seu nó personalizado deve aparecer
 
-5. Adicione o nó ao canvas.
+5. Adicione o nó ao canvas
 
-6. Configure os campos "Min" e "Max" com os valores desejados.
+6. Configure os campos "Min" e "Max" com os valores desejados
 
 7. Execute o fluxo de trabalho para ver o número aleatório gerado na saída
 
