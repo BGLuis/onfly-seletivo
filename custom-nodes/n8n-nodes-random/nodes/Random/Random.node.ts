@@ -29,7 +29,9 @@ export class Random implements INodeType {
                 type: 'number',
                 default: 1,
                 typeOptions: {
-                    minValue: 1,
+                    numberPrecision: 0,
+                    minValue: -1_000_000_000,
+                    maxValue: 1_000_000_000,
                 },
                 required: true,
                 description: 'The minimum integer value to generate',
@@ -45,7 +47,9 @@ export class Random implements INodeType {
                 type: 'number',
                 default: 100,
                 typeOptions: {
-                    minValue: 1,
+                    numberPrecision: 0,
+                    minValue: -1_000_000_000,
+                    maxValue: 1_000_000_000,
                 },
                 description: 'The maximum integer value to generate',
                 required: true,
@@ -64,12 +68,15 @@ export class Random implements INodeType {
 
         for (let i = 0; i < items.length; i++) {
             try {
+                const operation = this.getNodeParameter('operation', i) as string;
                 const min = this.getNodeParameter('min', i) as number;
                 const max = this.getNodeParameter('max', i) as number;
 
-                if (min >= max) {
+                if (operation !== 'true-random')
+                    throw new NodeOperationError(this.getNode(), `The operation "${operation}" is not supported!`);
+
+                if (min >= max)
                     throw new NodeOperationError(this.getNode(), 'The value of "Max" must be greater than "Min"');
-                }
 
                 const qs = {
                     num: 1,
