@@ -15,7 +15,7 @@ services:
       - n8n_network
 
   build-custom-nodes:
-    image: node:18-alpine
+    image: node:22-alpine
     container_name: n8n_builder
     volumes:
       - ./custom-nodes/n8n-nodes-random:/workspace
