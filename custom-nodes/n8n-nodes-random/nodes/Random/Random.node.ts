@@ -62,6 +62,54 @@ export class Random implements INodeType {
         ]
     };
 
+    private async generateRandomNumbers(
+        context: IExecuteFunctions,
+        min: number,
+        max: number,
+        nums: number = 1
+    ): Promise<number[]> {
+        const qs = {
+            num: nums,
+            min: min,
+            max: max,
+            col: 1,
+            base: 10,
+            format: 'plain',
+            rnd: 'new',
+        };
+
+        const options: IHttpRequestOptions = {
+            method: 'GET',
+            qs: qs,
+            url: `https://www.random.org/integers/`,
+        };
+
+        const response = await context.helpers.httpRequest(options);
+        context.logger.debug('Random API Response', {
+            response,
+            type: typeof response,
+            length: response?.length
+        });
+
+        const responseText = String(response).trim();
+        const lines = responseText.split('\n');
+        const randomNumbers: number[] = [];
+
+        for (const line of lines) {
+            const number = parseInt(line.trim(), 10);
+            if (isNaN(number)) {
+                throw new NodeOperationError(context.getNode(), `API response contains invalid number: ${line}`);
+            }
+            randomNumbers.push(number);
+        }
+
+        if (randomNumbers.length === 0) {
+            throw new NodeOperationError(context.getNode(), 'API response is empty or contains no valid numbers.');
+        }
+
+        return randomNumbers;
+    }
+
     async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
         const items = this.getInputData();
         const returnData: INodeExecutionData[] = [];
@@ -78,37 +126,12 @@ export class Random implements INodeType {
                 if (min >= max)
                     throw new NodeOperationError(this.getNode(), 'The value of "Max" must be greater than "Min"');
 
-                const qs = {
-                    num: 1,
-                    min: min,
-                    max: max,
-                    col: 1,
-                    base: 10,
-                    format: 'plain',
-                    rnd: 'new',
-                };
+                const randomNumbers = await Random.prototype.generateRandomNumbers.call(this, this, min, max);
 
-                const options: IHttpRequestOptions = {
-                    method: 'GET',
-                    qs: qs,
-                    url: `https://www.random.org/integers/`,
-                };
-
-                const response = await this.helpers.httpRequest(options);
-                this.logger.debug('Random API Response', {
-                    response,
-                    type: typeof response,
-                    length: response?.length
-                });
-                const randomNumber = parseInt(String(response).trim(), 10);
-                // const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
-                if (isNaN(randomNumber)) {
-                    throw new NodeOperationError(this.getNode(), 'API response is not a valid number.');
-                }
                 const newItem: INodeExecutionData = {
                     json: {
                         ...items[i].json,
-                        randomNumber: randomNumber,
+                        randomNumber: randomNumbers[0],
                     },
                     pairedItem: { item: i },
                 };
